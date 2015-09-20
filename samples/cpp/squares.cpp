@@ -102,7 +102,7 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
                 // area may be positive or negative - in accordance with the
                 // contour orientation
                 if( approx.size() == 4 &&
-                    fabs(contourArea(Mat(approx))) > 1000 &&
+                    fabs(contourArea(Mat(approx))) > 100 &&
                     isContourConvex(Mat(approx)) )
                 {
                     double maxCosine = 0;
@@ -117,7 +117,7 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
                     // if cosines of all angles are small
                     // (all angles are ~90 degree) then write quandrange
                     // vertices to resultant sequence
-                    if( maxCosine < 0.3 )
+                    if( maxCosine < 0.7 )
                         squares.push_back(approx);
                 }
             }
@@ -133,16 +133,16 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
     {
         const Point* p = &squares[i][0];
         int n = (int)squares[i].size();
-        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
+        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 1, LINE_AA);
     }
+imwrite("1.jpg",image);
 
-    imshow(wndname, image);
 }
 
 
 int main(int /*argc*/, char** /*argv*/)
 {
-    static const char* names[] = { "../data/pic1.png", "../data/pic2.png", "../data/pic3.png",
+    static const char* names[] = { "14425794758853707.jpg", "1442579555157008.jpg", "../data/pic3.png",
         "../data/pic4.png", "../data/pic5.png", "../data/pic6.png", 0 };
     help();
     namedWindow( wndname, 1 );
