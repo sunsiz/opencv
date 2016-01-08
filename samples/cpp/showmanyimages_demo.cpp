@@ -10,9 +10,9 @@ int main( int argc, char** argv )
 {
     vector<Mat> images;
 
-    for ( int i = 0; i < 27; i++ )
+    for ( int i = 0; i < 150; i++ )
     {
-        Mat image( 240,320,CV_8UC3, Scalar( (rand()&255), (rand()&255), (rand()&255) ));
+        Mat image( 240 + (rand()&200),320 + (rand()&200),CV_8UC3, Scalar( (rand()&255), (rand()&255), (rand()&255) ));
         circle( image, Point( image.cols / 2, image.rows / 2 ), image.cols / 3, Scalar( (rand()&255), (rand()&255), (rand()&255) ) );
         images.push_back( image );
         showManyImages("showManyImages test", images);
@@ -23,7 +23,7 @@ int main( int argc, char** argv )
 
 int showManyImages( const String winName, const vector<Mat> images )
 {
-    int nImg = images.size() > 25 ? 25 : (int)images.size();
+    int nImg = images.size() > 150 ? 150 : (int)images.size();
 
     int x, y;
 
@@ -36,16 +36,14 @@ int showManyImages( const String winName, const vector<Mat> images )
     float scale;
     int max;
 
-    // TODO: code-block #1 - should be replaced with more robust code
-    // start of code-block #1
     if (nImg <= 0)
     {
         return -1;
     }
 
-    Mat dispayImage = Mat::zeros(Size(100 + size*w, 60 + size*h), CV_8UC3);
+    Mat dispayImage = Mat::zeros( Size( size * w, size * h ), CV_8UC3);
 
-    for (int i= 0, m=20, n=20; i <nImg; i++, m+=(20+size))
+    for (int i= 0, m = 0, n = 0; i < nImg; i++, m += size )
     {
         x = images[i].cols;
         y = images[i].rows;
@@ -53,10 +51,10 @@ int showManyImages( const String winName, const vector<Mat> images )
         max = ( x > y ) ? x : y;
         scale = (float) ( (float) max / size );
 
-        if ( i%w == 0 && m != 20 )
+        if ( i % w == 0 && m > 0 )
         {
-            m = 20;
-            n += 20 + size;
+            m = 0;
+            n += size;
         }
 
         Mat imageROI = dispayImage( Rect( m, n, (int)( x / scale ), (int)( y / scale )));
