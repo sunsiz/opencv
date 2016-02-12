@@ -58,6 +58,21 @@ int main(int argc, char** argv)
         pt1.y = rng.uniform(y1, y2);
         pt2.x = rng.uniform(x1, x2);
         pt2.y = rng.uniform(y1, y2);
+
+        arrowedLine( image, pt1, pt2, randomColor(rng), rng.uniform(1,10), lineType );
+
+        imshow(wndname, image);
+        if(waitKey(DELAY) >= 0)
+            return 0;
+    }
+
+    for (i = 0; i < NUMBER; i++)
+    {
+        Point pt1, pt2;
+        pt1.x = rng.uniform(x1, x2);
+        pt1.y = rng.uniform(y1, y2);
+        pt2.x = rng.uniform(x1, x2);
+        pt2.y = rng.uniform(y1, y2);
         int thickness = rng.uniform(-3, 10);
 
         rectangle( image, pt1, pt2, randomColor(rng), MAX(thickness, -1), lineType );
