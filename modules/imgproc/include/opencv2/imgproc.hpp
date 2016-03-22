@@ -162,9 +162,9 @@ result:
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
-using namespace cv;
-
 #include <iostream>
+
+using namespace cv;
 using namespace std;
 
 int main(int argc, const char *argv[])
