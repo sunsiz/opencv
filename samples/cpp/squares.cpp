@@ -85,7 +85,7 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
             {
                 // approximate contour with accuracy proportional
                 // to the contour perimeter
-                approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
+                approxPolyDP(Mat(contours[i]), approx, 5, true);
 
                 // square contours should have 4 vertices after approximation
                 // relatively large area (to filter out noisy contours)
@@ -93,8 +93,7 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
                 // Note: absolute value of an area is used because
                 // area may be positive or negative - in accordance with the
                 // contour orientation
-                if( approx.size() == 4 &&
-                    fabs(contourArea(Mat(approx))) > 1000 &&
+                if( approx.size() > 7 &&
                     isContourConvex(Mat(approx)) )
                 {
                     double maxCosine = 0;
@@ -109,7 +108,7 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
                     // if cosines of all angles are small
                     // (all angles are ~90 degree) then write quandrange
                     // vertices to resultant sequence
-                    if( maxCosine < 0.3 )
+                  //  if( maxCosine < 0.3 )
                         squares.push_back(approx);
                 }
             }
@@ -125,37 +124,30 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
     {
         const Point* p = &squares[i][0];
         int n = (int)squares[i].size();
-        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
+        polylines(image, &p, &n, 1, true, Scalar( (rand()&255), (rand()&255), (rand()&255) ), 1, LINE_AA);
     }
 
     imshow(wndname, image);
 }
 
 
-int main(int /*argc*/, char** /*argv*/)
+int main(int argc, char** argv)
 {
-    static const char* names[] = { "../data/pic1.png", "../data/pic2.png", "../data/pic3.png",
-        "../data/pic4.png", "../data/pic5.png", "../data/pic6.png", 0 };
     help();
     namedWindow( wndname, 1 );
     vector<vector<Point> > squares;
 
-    for( int i = 0; names[i] != 0; i++ )
-    {
-        Mat image = imread(names[i], 1);
+        Mat image = imread(argv[1], 1);
         if( image.empty() )
         {
-            cout << "Couldn't load " << names[i] << endl;
-            continue;
+            cout << "Couldn't load " << argv[1] << endl;
+            return -1;
         }
 
         findSquares(image, squares);
         drawSquares(image, squares);
 
         int c = waitKey();
-        if( (char)c == 27 )
-            break;
-    }
 
     return 0;
 }
