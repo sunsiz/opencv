@@ -493,6 +493,20 @@ result of an incorrect sign in the case of overflow.
 can be set to -1, which will be equivalent to src1.depth().
 @sa  add, subtract, scaleAdd, Mat::convertTo
 */
+CV_EXPORTS_W void copyAt(InputArray src1, InputArray src2,
+                              Point point, OutputArray dst);
+
+/** @brief Copy one array to another array at given point.
+
+The function copyAt copies one array to another array at given point.
+
+@param src1 first input array.
+@param src2 second input array.
+@param point where to copy.
+@param dst output array (will be the same size and number of channels as the src2.)
+
+@sa  addWeighted, add, subtract, scaleAdd, Mat::convertTo
+*/
 CV_EXPORTS_W void addWeighted(InputArray src1, double alpha, InputArray src2,
                               double beta, double gamma, OutputArray dst, int dtype = -1);
 
