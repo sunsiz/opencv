@@ -1,11 +1,9 @@
 #include <opencv2/opencv.hpp>
 
-#include <string>
 #include <iostream>
-#include <fstream>
-#include <vector>
-
 #include <time.h>
+
+#define _DEBUG
 
 using namespace cv;
 using namespace cv::ml;
@@ -13,7 +11,7 @@ using namespace std;
 
 void get_svm_detector(const Ptr<SVM>& svm, vector< float > & hog_detector );
 void convert_to_ml(const std::vector< cv::Mat > & train_samples, cv::Mat& trainData );
-void load_images( const string & prefix, const string & filename, vector< Mat > & img_lst );
+void load_images( const string & prefix, vector< Mat > & img_lst );
 void sample_neg( const vector< Mat > & full_neg_lst, vector< Mat > & neg_lst, const Size & size );
 Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorValues, const Size & size );
 void compute_hog( const vector< Mat > & img_lst, vector< Mat > & gradient_lst, const Size & size );
@@ -59,7 +57,7 @@ void convert_to_ml(const std::vector< cv::Mat > & train_samples, cv::Mat& trainD
     for( int i = 0 ; itr != end ; ++itr, ++i )
     {
         CV_Assert( itr->cols == 1 ||
-            itr->rows == 1 );
+                   itr->rows == 1 );
         if( itr->cols == 1 )
         {
             transpose( *(itr), tmp );
@@ -72,35 +70,26 @@ void convert_to_ml(const std::vector< cv::Mat > & train_samples, cv::Mat& trainD
     }
 }
 
-void load_images( const string & prefix, const string & filename, vector< Mat > & img_lst )
+void load_images( const string & prefix, vector< Mat > & img_lst )
 {
-    string line;
-    ifstream file;
+    vector<String> files;
+    glob(prefix, files);
 
-    file.open( (prefix+filename).c_str() );
-    if( !file.is_open() )
+    for (size_t i = 0; i < files.size(); ++i)
     {
-        cerr << "Unable to open the list of images from " << filename << " filename." << endl;
-        exit( -1 );
-    }
 
-    bool end_of_parsing = false;
-    while( !end_of_parsing )
-    {
-        getline( file, line );
-        if( line.empty() ) // no more file to read
+        Mat img = imread(files[i]); // load the image
+        if (img.empty()) // invalid image, just skip it.
         {
-            end_of_parsing = true;
-            break;
-        }
-        Mat img = imread( (prefix+line).c_str() ); // load the image
-        if( img.empty() ) // invalid image, just skip it.
+            cout << files[i] << " is invalid!" << endl;
             continue;
+        }
+
 #ifdef _DEBUG
-        imshow( "image", img );
-        waitKey( 10 );
+        imshow("image", img);
+        waitKey(10);
 #endif
-        img_lst.push_back( img.clone() );
+        img_lst.push_back(img);
     }
 }
 
@@ -404,7 +393,7 @@ void test_it( const Size & size )
 int main( int argc, char** argv )
 {
     cv::CommandLineParser parser(argc, argv, "{help h|| show help message}"
-            "{pd||pos_dir}{p||pos.lst}{nd||neg_dir}{n||neg.lst}");
+                                 "{pd|./pos|pos_dir}{nd|./neg|neg_dir}");
     if (parser.has("help"))
     {
         parser.printMessage();
@@ -416,30 +405,41 @@ int main( int argc, char** argv )
     vector< Mat > gradient_lst;
     vector< int > labels;
     string pos_dir = parser.get<string>("pd");
-    string pos = parser.get<string>("p");
     string neg_dir = parser.get<string>("nd");
-    string neg = parser.get<string>("n");
-    if( pos_dir.empty() || pos.empty() || neg_dir.empty() || neg.empty() )
+    if( pos_dir.empty() || neg_dir.empty() )
     {
         cout << "Wrong number of parameters." << endl
-            << "Usage: " << argv[0] << " --pd=pos_dir -p=pos.lst --nd=neg_dir -n=neg.lst" << endl
-            << "example: " << argv[0] << " --pd=/INRIA_dataset/ -p=Train/pos.lst --nd=/INRIA_dataset/ -n=Train/neg.lst" << endl;
+             << "Usage: " << argv[0] << " --pd=pos_dir --nd=neg_dir" << endl
+             << "example: " << argv[0] << " --pd=/INRIA_dataset/ --nd=/INRIA_dataset/" << endl;
         exit( -1 );
     }
-    load_images( pos_dir, pos, pos_lst );
+    cout << "positive images are being loaded." << endl;
+    load_images( pos_dir, pos_lst );
+
+    Size pos_image_size = pos_lst[0].size();
+    for (size_t i = 0; i < pos_lst.size(); ++i)
+    {
+        if( pos_lst[i].size() != pos_image_size)
+        {
+            cout << "All positive images should be same size!" << endl;
+            exit( -1 );
+        }
+    }
     labels.assign( pos_lst.size(), +1 );
     const unsigned int old = (unsigned int)labels.size();
-    load_images( neg_dir, neg, full_neg_lst );
-    sample_neg( full_neg_lst, neg_lst, Size( 96,160 ) );
+    cout << "negative images are being loaded." << endl;
+    load_images( neg_dir, full_neg_lst );
+    sample_neg( full_neg_lst, neg_lst, pos_image_size );
+
     labels.insert( labels.end(), neg_lst.size(), -1 );
     CV_Assert( old < labels.size() );
 
-    compute_hog( pos_lst, gradient_lst, Size( 96, 160 ) );
-    compute_hog( neg_lst, gradient_lst, Size( 96, 160 ) );
+    compute_hog( pos_lst, gradient_lst, pos_image_size );
+    compute_hog( neg_lst, gradient_lst, pos_image_size );
 
     train_svm( gradient_lst, labels );
 
-    test_it( Size( 96, 160 ) ); // change with your parameters
+    test_it( pos_image_size ); // change with your parameters
 
     return 0;
 }
