@@ -20,13 +20,18 @@ int low_r=30, low_g=30, low_b=30;
 int high_r=100, high_g=100, high_b=100;
 
 /** @function main */
-int main()
+int main(int argc, char** argv)
 {
     //! [mat]
     Mat frame, frame_threshold;
     //! [mat]
     //! [cap]
-    VideoCapture cap(0);
+    VideoCapture cap;
+    if( argc > 1)
+    {
+     cap.open( argv[1] );
+    }
+    else cap.open( 0 );
     //! [cap]
     //! [window]
     namedWindow("Video Capture", WINDOW_NORMAL);
@@ -41,7 +46,7 @@ int main()
     createTrackbar("Low B","Object Detection", &low_b, 255, on_low_b_thresh_trackbar);
     createTrackbar("High B","Object Detection", &high_b, 255, on_high_b_thresh_trackbar);
     //! [trackbar]
-    while((char)waitKey(1)!='q'){
+    while((char)waitKey(10)!='q'){
         //! [while]
         cap>>frame;
         if(frame.empty())
